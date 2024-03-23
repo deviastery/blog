@@ -14,24 +14,20 @@ export const App: React.FC = () => {
     };
 
     const handleScroll = () => {
-        if (
-            window.innerHeight + window.scrollY >= document.body.offsetHeight &&
-            posts.length > 0 &&
-            nextCountPosts <= posts.length
-        ) {
-            setNextCountPosts(nextCountPosts + 10);
-            console.log(nextCountPosts+10);
-        }
+        if (window.innerHeight + window.scrollY >= document.body.offsetHeight) {
+            if (nextCountPosts <= 50) {
+                setNextCountPosts(nextCountPosts + 10);      
+            }
+        }       
+        
     };
 
     useEffect(() => {
         (async () => {
             const res = await getResourse('https://jsonplaceholder.typicode.com/posts');
 
-            console.log(nextCountPosts);
             if (Array.isArray(res)) {
 
-                    console.log(res);
                     setPosts(res);
                 }
         })();
@@ -39,17 +35,27 @@ export const App: React.FC = () => {
 
     useEffect(() => {
         window.addEventListener('scroll', handleScroll);
-        
+        return () => {
+            window.removeEventListener('scroll', handleScroll);
+        };
+            
     }, [posts, nextCountPosts]);
 
-    return (
-        <div>
+    return ( 
+        <div >
             {posts.slice(0, nextCountPosts).map((post: IPost, index: number) => (
                 <div key={index}>
                     <h3>{post.title}</h3>
                     <p>{post.body}</p>
                 </div>
             ))}
+            {nextCountPosts > 50 && 
+            nextCountPosts < 100 && 
+            <button 
+                onClick={() => setNextCountPosts(nextCountPosts + 10)}
+            >
+                Загрузить еще
+            </button>}
         </div>
     )
 }
