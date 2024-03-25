@@ -1,15 +1,21 @@
-import { useState, useEffect} from 'react';
+import { useRef, useState, useEffect, useLayoutEffect} from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { getApiResource } from '../utils/getPostsData'
 
 import { IPost } from "../types/data";
 
 export const App: React.FC = () => {
+    const location = useLocation();
+    const navigate = useNavigate();
 
     const [posts, setPosts] = useState<IPost[]>([]);
     const [countPosts, setCountPosts] = useState(10);
     const [page, setPage] = useState(1);
     const [scrollHeight, setScrollHeight] = useState(new Map());
-    const [prevViewCount, setPrevViewCount] = useState(0);
+    const [prevViewCount, setPrevViewCount] = useState(10);
+
+    const postsRef = useRef<HTMLDivElement | null>(null);
+    const [postsHeight, setPostsHeight] = useState<number>(0);
 
     const getResourse = async (url : string) : Promise<IPost[] | boolean> => {
         const res = await getApiResource(url);
@@ -23,38 +29,47 @@ export const App: React.FC = () => {
         setScrollHeight(newMap);
     };
 
+    const updateURL = (page: number) => {
+        const searchParams = new URLSearchParams(location.search);
+        searchParams.set('page', page.toString());
+
+        navigate(`?${searchParams.toString()}`, { replace: true });
+    };
+
 
     const handleScroll = () => {
-
+        console.log("Page: ", page);
+        console.log("height: ", postsHeight);
+        console.log("map: ", scrollHeight);
+        console.log("window.scrollY: ", window.scrollY);
+        console.log("prevViewCount: ", prevViewCount);
+            
         if (window.innerHeight + window.scrollY >= document.body.offsetHeight) {
+            
+            addToMap(countPosts, postsHeight);
+
             if (countPosts <= 50) {
 
                 setCountPosts(countPosts + 10); 
-
-                setPrevViewCount(prevViewCount + 10);
-
-                setPage(page + 1);
-            }
-
-            addToMap(countPosts, window.innerHeight + window.scrollY);
+            };
             
-        };
+        };     
 
-        
-        if (window.innerHeight + window.scrollY <= scrollHeight.get(prevViewCount)) {
+        if (window.scrollY > scrollHeight.get(prevViewCount)) {
+
+            setPage(page + 1);
+            updateURL(page + 1);
+            setPrevViewCount(prevViewCount + 10);
+
+        };
+           
+        if (scrollHeight.size > 1 && window.scrollY < scrollHeight.get(prevViewCount - 10)) {
 
             setPage(page - 1);
+            updateURL(page - 1);
             setPrevViewCount(prevViewCount - 10);
 
         };
-
-        if (window.innerHeight + window.scrollY > scrollHeight.get(prevViewCount + 10)) {
-
-            setPage(page + 1);
-            setPrevViewCount(prevViewCount + 10);
-
-        };        
-           
     };
 
     useEffect(() => {
@@ -69,32 +84,41 @@ export const App: React.FC = () => {
     }, []);
 
     useEffect(() => {
+        updateURL(page);
+
         window.addEventListener('scroll', handleScroll);
         return () => {
             window.removeEventListener('scroll', handleScroll);
         };
             
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [posts, countPosts, prevViewCount]);
+    }, [posts, countPosts, prevViewCount, postsHeight]);
 
-    return ( 
-            <div >
+    useEffect(() => {
+        if (postsRef.current) {
+            setPostsHeight(postsRef.current.clientHeight);
+        }
+    })
+
+    return (
+        <div>
+            <div id='posts' ref={postsRef}>
                 {posts.slice(0, countPosts).map((post: IPost, index: number) => (
                     <div key={index}>
                         <h3>{post.title}</h3>
                         <p>{post.body}</p>
                     </div>
                 ))}
-                {countPosts > 50 && 
-                countPosts < 100 && 
+            </div>
+            {countPosts > 50 && countPosts < 100 && (
                 <button 
                     onClick={() => {
                         setCountPosts(countPosts + 10);
-
                     }}
                 >
                     Загрузить еще
-                </button>}
-            </div>
-    )
+                </button>
+            )}
+        </div>
+    );
 }
