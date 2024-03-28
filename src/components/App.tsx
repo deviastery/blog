@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect, useLayoutEffect} from 'react';
+import { useRef, useState, useEffect} from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { getApiResource } from '../utils/getPostsData'
 
@@ -17,8 +17,8 @@ export const App: React.FC = () => {
     const [postsHeight, setPostsHeight] = useState<number>(0);
 
     const getResourse = async (url : string) : Promise<IPost[] | boolean> => {
-        const res = await getApiResource(url);
 
+        const res = await getApiResource(url);
         return res;
     };
 
@@ -39,16 +39,11 @@ export const App: React.FC = () => {
 
         let page = 1;
 
-        for (let [pageHeight, height] of heights) {
-            console.log("pageHeight: ", pageHeight);
-            console.log('height: ', height);
+        for (let _ of heights) {
             
             let nextHeight = heights.get((++page).toString());
 
-            console.log('nextHeight: ', nextHeight);
-
             if (!nextHeight || window.scrollY < nextHeight) {
-
                 return --page;
             }
         }
@@ -58,29 +53,16 @@ export const App: React.FC = () => {
 
 
     const handleScroll = () => {
-        // console.log("Page: ", page);
-        // console.log("height: ", postsHeight);
-        // console.log("map: ", scrollHeight);
-        // console.log("window.scrollY: ", window.scrollY);
-        // console.log("prevViewCount: ", prevViewCount);
-        // console.log("countPosts: ", countPosts);
+
+        localStorage.setItem('countPosts', JSON.stringify(countPosts));
+        localStorage.setItem('startsPage', JSON.stringify(Object.fromEntries(startsPage)));
 
         const newPage = getPage(startsPage);
-        // console.log("newPage: ", newPage);
-
         setPage(newPage);
-
-        console.log('window.scrollY: ', window.scrollY);
-        console.log('page: ', page);
-
-        // console.log("Page: ", page);
             
         if (window.innerHeight + window.scrollY >= document.body.offsetHeight) {
             
-            // addToMap(countPosts.toString(), postsHeight);
-
             if (countPosts <= 50) {
-
                 setCountPosts(countPosts + 10); 
             };
             
@@ -89,6 +71,16 @@ export const App: React.FC = () => {
     };
 
     useEffect(() => {
+
+        const startsPageFromLocalStorage = localStorage.getItem('startsPage');
+
+        if (startsPageFromLocalStorage) {
+            setStartsPage(new Map(Object.entries(JSON.parse(startsPageFromLocalStorage))));
+        } 
+        
+        setCountPosts(JSON.parse(localStorage.getItem('countPosts') || "10"));
+        
+
         (async () => {
             const res = await getResourse('https://jsonplaceholder.typicode.com/posts');
 
@@ -122,7 +114,21 @@ export const App: React.FC = () => {
     });
 
     useEffect(() => {
-        if (!startsPage.has(countPosts.toString())) {
+
+        const startsPageFromLocalStorage = localStorage.getItem('startsPage');
+
+        if (startsPageFromLocalStorage) {
+            let currentStartsPage = new Map(Object.entries(JSON.parse(startsPageFromLocalStorage)));
+
+            if (!currentStartsPage.has((countPosts / 10).toString())) {                
+                
+                addStart((countPosts / 10).toString(), postsHeight);
+
+                localStorage.setItem('startsPage', JSON.stringify(Object.fromEntries(startsPage)));
+
+            }
+        } else {
+
             addStart((countPosts / 10).toString(), postsHeight);
         }
     }, [countPosts]);
