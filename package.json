@@ -1,5 +1,6 @@
 {
   "name": "blog",
+  "homepage": "/posts",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
@@ -40,5 +41,10 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "css-loader": "^6.10.0",
+    "style-loader": "^3.3.4",
+    "typescript-plugin-css-modules": "^5.1.0"
   }
 }

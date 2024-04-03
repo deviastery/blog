@@ -1,6 +1,6 @@
 import { IPost } from "../types/data";
 
-export const getApiResource = async (url: string): Promise<IPost[] | boolean> => {
+export const getApiResource = async (url: string): Promise<IPost[] | IPost | boolean> => {
     
     try {
         const res = await fetch(url);

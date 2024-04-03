@@ -1,10 +1,14 @@
-import { useRef, useState, useEffect} from 'react';
+import React, { useRef, useState, useEffect} from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { getApiResource } from '../utils/getPostsData'
+import { Link } from "react-router-dom";
 
-import { IPost } from "../types/data";
+import { getApiResource } from '../../utils/getPostsData'
 
-export const App: React.FC = () => {
+import { IPost } from "../../types/data";
+
+import styles from './AllPostsPage.module.css';
+
+const AllPostsPage: React.FC = () => {
     const location = useLocation();
     const navigate = useNavigate();
 
@@ -16,7 +20,7 @@ export const App: React.FC = () => {
     const postsRef = useRef<HTMLDivElement | null>(null);
     const [postsHeight, setPostsHeight] = useState<number>(0);
 
-    const getResourse = async (url : string) : Promise<IPost[] | boolean> => {
+    const getResourse = async (url : string) : Promise<IPost[] | IPost | boolean> => {
 
         const res = await getApiResource(url);
         return res;
@@ -47,7 +51,6 @@ export const App: React.FC = () => {
                 return --page;
             }
         }
-
         return page;
     };
 
@@ -134,25 +137,34 @@ export const App: React.FC = () => {
     }, [countPosts]);
 
     return (
-        <div>
-            <div id='posts' ref={postsRef}>
-                {posts.slice(0, countPosts).map((post: IPost, index: number) => (
-                    <div key={index}>
-                        <h3>{index}</h3>
-                        <h3>{post.title}</h3>
-                        <p>{post.body}</p>
-                    </div>
-                ))}
+        <div className={styles.wrapper}>            
+            <div id='posts' ref={postsRef}  className={styles.container__posts}>
+                <ul className={styles.ul__posts}>
+                    {posts.slice(0, countPosts).map((post: IPost, id: number) => (
+                        <li key={id} className={styles.container__post}>
+                            <Link to={`/posts/${id}`} className={styles.post}>
+                                <h3 className={styles.post__title}>{post.title}</h3>
+                                <p className={styles.post__body}>{post.body}</p>
+                            </Link>
+                        </li>
+                    ))}
+                </ul>
             </div>
+
             {countPosts > 50 && countPosts < 100 && (
-                <button 
-                    onClick={() => {
-                        setCountPosts(countPosts + 10);
-                    }}
-                >
-                    Загрузить еще
-                </button>
+                <div className={styles.container__button}>
+                    <button 
+                        onClick={() => {
+                            setCountPosts(countPosts + 10);
+                        }}
+                        className={styles.posts__button}
+                    >
+                        Загрузить еще
+                    </button>
+                </div>
             )}
         </div>
     );
 }
+
+export default AllPostsPage;
