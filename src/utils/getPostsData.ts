@@ -10,6 +10,7 @@ export const getApiResource = async (url: string): Promise<IPost[] | IPost | boo
             return false;
         }
         return await res.json();
+        
     } catch (error : any) {
         console.error('Could not fetch.', error.message);
         return false;

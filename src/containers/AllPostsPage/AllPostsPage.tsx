@@ -26,7 +26,7 @@ const AllPostsPage: React.FC = () => {
         return res;
     };
 
-    const addStart = (key : string, value : number) => {
+    const addStart = (key : string, value : number) => {  // добавление начала новой порции постов
         const newMap = new Map(startsPage);
         newMap.set(key, value);
         setStartsPage(newMap);
@@ -39,7 +39,7 @@ const AllPostsPage: React.FC = () => {
         navigate(`?${searchParams.toString()}`, { replace: true });
     };
 
-    const getPage = ( heights : Map<string, number>) : number => {
+    const getPage = ( heights : Map<string, number>) : number => {  // получение текущей страницы
 
         let page = 1;
 
@@ -110,13 +110,14 @@ const AllPostsPage: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [page]);
 
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => {
         if (postsRef.current) {
             setPostsHeight(postsRef.current.clientHeight);
         }
     });
 
-    useEffect(() => {
+    useEffect(() => {  // обновление значений в localStorage
 
         const startsPageFromLocalStorage = localStorage.getItem('startsPage');
 
@@ -134,6 +135,7 @@ const AllPostsPage: React.FC = () => {
 
             addStart((countPosts / 10).toString(), postsHeight);
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [countPosts]);
 
     return (
@@ -142,7 +144,7 @@ const AllPostsPage: React.FC = () => {
                 <ul className={styles.ul__posts}>
                     {posts.slice(0, countPosts).map((post: IPost, id: number) => (
                         <li key={id} className={styles.container__post}>
-                            <Link to={`/posts/${id}`} className={styles.post}>
+                            <Link to={`/${id}`} className={styles.post}>
                                 <h3 className={styles.post__title}>{post.title}</h3>
                                 <p className={styles.post__body}>{post.body}</p>
                             </Link>

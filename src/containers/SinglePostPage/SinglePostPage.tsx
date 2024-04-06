@@ -12,7 +12,7 @@ const SinglePostPage: React.FC = () => {
     const [post, setPost] = useState<IPost>();
 
     const { id } = useParams();
-    const postId = id && parseInt(id, 10) + 1;
+    const postId = id && parseInt(id, 10) + 1; // корректное id поста
 
     const getResourse = async (url : string) : Promise<IPost[] | IPost | boolean> => {
 
